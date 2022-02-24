@@ -60,8 +60,8 @@ import (
 func TestBasic(t *testing.T) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := New(1000, 4, bitSetProvider)
 	n1 := []byte("Bess")
@@ -89,8 +89,8 @@ func TestBasic(t *testing.T) {
 func TestBasicUint32(t *testing.T) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := New(1000, 4, bitSetProvider)
 	n1 := make([]byte, 4)
@@ -134,8 +134,8 @@ func TestBasicUint32(t *testing.T) {
 func TestNewWithLowNumbers(t *testing.T) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := New(0, 0, bitSetProvider)
 	if f.k != 1 {
@@ -149,8 +149,8 @@ func TestNewWithLowNumbers(t *testing.T) {
 func TestString(t *testing.T) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := NewWithEstimates(1000, 0.001, bitSetProvider)
 	n1 := "Love"
@@ -231,8 +231,8 @@ func min(a, b uint) uint {
 func chiTestBloom(m, k, rounds uint, elements [][]byte) (succeeds bool) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := New(m, k, bitSetProvider)
 	results := make([]uint, m)
@@ -296,8 +296,8 @@ func TestLocation(t *testing.T) {
 func TestCap(t *testing.T) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := New(1000, 4, bitSetProvider)
 	if f.Cap() != f.m {
@@ -308,8 +308,8 @@ func TestCap(t *testing.T) {
 func TestK(t *testing.T) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := New(1000, 4, bitSetProvider)
 	if f.K() != f.k {
@@ -320,8 +320,8 @@ func TestK(t *testing.T) {
 // func TestMarshalUnmarshalJSON(t *testing.T) {
 // 	cli := initMockRedis()
 // 	bitSetProvider := RedisBitSetProvider{
-// 		redisKey: "test",
-// 		redisClient: cli,
+// 		RedisKey: "test",
+// 		RedisClient: cli,
 // 	}
 // 	f := New(1000, 4, bitSetProvider)
 // 	data, err := json.Marshal(f)
@@ -492,8 +492,8 @@ func TestK(t *testing.T) {
 func BenchmarkSeparateTestAndAdd(b *testing.B) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := NewWithEstimates(uint(b.N), 0.0001, bitSetProvider)
 	key := make([]byte, 100)
@@ -508,8 +508,8 @@ func BenchmarkSeparateTestAndAdd(b *testing.B) {
 func BenchmarkCombinedTestAndAdd(b *testing.B) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := NewWithEstimates(uint(b.N), 0.0001, bitSetProvider)
 	key := make([]byte, 100)
@@ -571,8 +571,8 @@ func BenchmarkCombinedTestAndAdd(b *testing.B) {
 // func TestCopy(t *testing.T) {
 // 	cli := initMockRedis()
 // 	bitSetProvider := RedisBitSetProvider{
-// 		redisKey:    "test",
-// 		redisClient: cli,
+// 		RedisKey:    "test",
+// 		RedisClient: cli,
 // 	}
 // 	f := New(1000, 4, bitSetProvider)
 // 	n1 := []byte("f")
@@ -639,8 +639,8 @@ func BenchmarkCombinedTestAndAdd(b *testing.B) {
 func TestTestLocations(t *testing.T) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := NewWithEstimates(1000, 0.001, bitSetProvider)
 	n1 := []byte("Love")
@@ -674,8 +674,8 @@ func TestTestLocations(t *testing.T) {
 // func TestApproximatedSize(t *testing.T) {
 // 	cli := initMockRedis()
 // 	bitSetProvider := RedisBitSetProvider{
-// 		redisKey:    "test",
-// 		redisClient: cli,
+// 		RedisKey:    "test",
+// 		RedisClient: cli,
 // 	}
 // 	f := NewWithEstimates(1000, 0.001, bitSetProvider)
 // 	f.Add([]byte("Love"))
@@ -691,8 +691,8 @@ func TestTestLocations(t *testing.T) {
 func TestFPP(t *testing.T) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
-		redisKey:    "test",
-		redisClient: cli,
+		RedisKey:    "test",
+		RedisClient: cli,
 	}
 	f := NewWithEstimates(1000, 0.001, bitSetProvider)
 	for i := uint32(0); i < 1000; i++ {

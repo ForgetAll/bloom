@@ -58,9 +58,18 @@ type BitSetProvider interface {
 	Set(offset uint) error
 	// Test offset is 1
 	Test(offset uint) (bool, error)
+	// TestBatch test offset array all 1
+	TestBatch(offset []uint) (bool, error)
+	// SetBatch set bit array to bitset
+	SetBatch(offset []uint) error
 	// New with m bits init
 	New(m uint)
 }
+
+var (
+	TestBatch = true
+	AddBatch  = true
+)
 
 // A BloomFilter is a representation of a set of _n_ items, where the main
 // requirement is to make membership queries; _i.e._, whether an item is a
@@ -139,11 +148,20 @@ func (f *BloomFilter) BitSet() *BitSetProvider {
 // Add data to the Bloom Filter. Returns the filter (allows chaining)
 func (f *BloomFilter) Add(data []byte) error {
 	h := baseHashes(data)
+	var offset []uint
 	for i := uint(0); i < f.k; i++ {
+		if AddBatch {
+			offset = append(offset, f.location(h, i))
+			continue
+		}
 		err := f.b.Set(f.location(h, i))
 		if err != nil {
 			return err
 		}
+	}
+
+	if AddBatch {
+		return f.b.SetBatch(offset)
 	}
 
 	return nil
@@ -159,7 +177,12 @@ func (f *BloomFilter) AddString(data string) error {
 // is definitely not in the set.
 func (f *BloomFilter) Test(data []byte) (bool, error) {
 	h := baseHashes(data)
+	var offset []uint
 	for i := uint(0); i < f.k; i++ {
+		if TestBatch {
+			offset = append(offset, f.location(h, i))
+			continue
+		}
 		result, err := f.b.Test(f.location(h, i))
 		if err != nil {
 			return false, err
@@ -168,6 +191,10 @@ func (f *BloomFilter) Test(data []byte) (bool, error) {
 		if !result {
 			return false, nil
 		}
+	}
+
+	if TestBatch {
+		return f.b.TestBatch(offset)
 	}
 
 	return true, nil
