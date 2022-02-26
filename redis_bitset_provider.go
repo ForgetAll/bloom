@@ -16,6 +16,11 @@ type RedisBitSetProvider struct {
 
 func (r RedisBitSetProvider) Set(offset uint) error {
 	_, err := r.RedisClient.SetBit(r.RedisKey, int64(offset), 1).Result()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.RedisClient.Expire(r.RedisKey, r.ExpireTime).Result()
 	return err
 }
 
@@ -70,6 +75,7 @@ func (r RedisBitSetProvider) SetBatch(offset []uint) error {
 			pipeliner.SetBit(r.RedisKey, int64(offset[i]), 1)
 		}
 
+		pipeliner.Expire(r.RedisKey, r.ExpireTime)
 		_, err := pipeliner.Exec()
 		return err
 	})
