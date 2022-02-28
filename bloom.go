@@ -172,6 +172,19 @@ func (f *BloomFilter) AddString(data string) error {
 	return f.Add([]byte(data))
 }
 
+func (f *BloomFilter) AddStrings(data []*string) error {
+	var offset []uint
+	for i := range data {
+		dataBytes := []byte(*data[i])
+		h := baseHashes(dataBytes)
+		for j := uint(0); j < f.k; j++ {
+			offset = append(offset, f.location(h, j))
+		}
+	}
+
+	return f.b.SetBatch(offset)
+}
+
 // Test returns true if the data is in the BloomFilter, false otherwise.
 // If true, the result might be a false positive. If false, the data
 // is definitely not in the set.

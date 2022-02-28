@@ -2,8 +2,9 @@ package bloom
 
 import (
 	"errors"
-	"github.com/go-redis/redis/v7"
 	"time"
+
+	"github.com/go-redis/redis/v7"
 )
 
 var errorNotExists = errors.New("item not in bitset")
@@ -84,4 +85,9 @@ func (r RedisBitSetProvider) SetBatch(offset []uint) error {
 }
 
 func (r RedisBitSetProvider) New(_ uint) {
+}
+
+func (r RedisBitSetProvider) Exists() (bool, error) {
+	result, err := r.RedisClient.Exists(r.RedisKey).Result()
+	return result == 1, err
 }
