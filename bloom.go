@@ -60,6 +60,8 @@ type BitSetProvider interface {
 	Test(offset uint) (bool, error)
 	// TestBatch test offset array all 1
 	TestBatch(offset []uint) (bool, error)
+	// TestBatchOffset test offset array all 1
+	TestBatchOffset(offsetArray [][]uint) ([]bool, error)
 	// SetBatch set bit array to bitset
 	SetBatch(offset []uint) error
 	// New with m bits init
@@ -213,11 +215,50 @@ func (f *BloomFilter) Test(data []byte) (bool, error) {
 	return true, nil
 }
 
+func (f *BloomFilter) getOffsetByData(data []byte) []uint {
+	h := baseHashes(data)
+	var offset []uint
+	for i := uint(0); i < f.k; i++ {
+		offset = append(offset, f.location(h, i))
+	}
+	return offset
+}
+
 // TestString returns true if the string is in the BloomFilter, false otherwise.
 // If true, the result might be a false positive. If false, the data
 // is definitely not in the set.
 func (f *BloomFilter) TestString(data string) (bool, error) {
 	return f.Test([]byte(data))
+}
+
+func (f *BloomFilter) TestStrings(data []string) ([]bool, error) {
+	var result []bool
+	var offsets [][]uint
+	for i := range data {
+		offsets = append(offsets, f.getOffsetByData([]byte(data[i])))
+	}
+	boolResults, err := f.b.TestBatchOffset(offsets)
+	if err != nil {
+		return result, err
+	}
+
+	tempResult := true
+	count := 1
+	for i := range boolResults {
+		if uint(count)%f.k == 0 {
+			result = append(result, tempResult)
+			tempResult = true
+			count++
+			continue
+		}
+
+		if tempResult && !boolResults[i] {
+			tempResult = false
+		}
+		count++
+	}
+
+	return result, nil
 }
 
 // TestLocations returns true if all locations are set in the BloomFilter, false

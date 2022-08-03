@@ -4,6 +4,9 @@ import (
 	"encoding/binary"
 	"math"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // This implementation of Bloom filters is _not_
@@ -62,6 +65,7 @@ func TestBasic(t *testing.T) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := New(1000, 4, bitSetProvider)
 	n1 := []byte("Bess")
@@ -91,6 +95,7 @@ func TestBasicUint32(t *testing.T) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := New(1000, 4, bitSetProvider)
 	n1 := make([]byte, 4)
@@ -136,6 +141,7 @@ func TestNewWithLowNumbers(t *testing.T) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := New(0, 0, bitSetProvider)
 	if f.k != 1 {
@@ -151,6 +157,7 @@ func TestString(t *testing.T) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := NewWithEstimates(1000, 0.001, bitSetProvider)
 	n1 := "Love"
@@ -233,6 +240,7 @@ func chiTestBloom(m, k, rounds uint, elements [][]byte) (succeeds bool) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := New(m, k, bitSetProvider)
 	results := make([]uint, m)
@@ -298,6 +306,7 @@ func TestCap(t *testing.T) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := New(1000, 4, bitSetProvider)
 	if f.Cap() != f.m {
@@ -310,6 +319,7 @@ func TestK(t *testing.T) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := New(1000, 4, bitSetProvider)
 	if f.K() != f.k {
@@ -489,11 +499,53 @@ func TestK(t *testing.T) {
 // 	}
 // }
 
+func TestBatchOffset(t *testing.T) {
+	cli := initMockRedis()
+	bitSetProvider := RedisBitSetProvider{
+		RedisKey:    "test",
+		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
+	}
+	f := NewWithEstimates(1000, 0.01, bitSetProvider)
+	a := "one"
+	b := "two"
+	c := "three"
+	err := f.AddStrings([]*string{&a, &b, &c})
+	assert.Nil(t, err)
+
+	testRes, err := f.TestString(a)
+	assert.Nil(t, err)
+	assert.Equal(t, true, testRes)
+
+	testData := []string{a, b, c}
+	res, err := f.TestStrings(testData)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, len(testData), len(res))
+
+	for i := range res {
+		assert.Equal(t, true, res[i])
+	}
+
+	testData = []string{a, "four", c, "adsf", b, "qwer"}
+	res, err = f.TestStrings(testData)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, len(testData), len(res))
+
+	for i := range res {
+		if i%2 == 1 {
+			assert.Equal(t, false, res[i])
+			continue
+		}
+		assert.Equal(t, true, res[i])
+	}
+}
+
 func BenchmarkSeparateTestAndAdd(b *testing.B) {
 	cli := initMockRedis()
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := NewWithEstimates(uint(b.N), 0.0001, bitSetProvider)
 	key := make([]byte, 100)
@@ -510,6 +562,7 @@ func BenchmarkCombinedTestAndAdd(b *testing.B) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := NewWithEstimates(uint(b.N), 0.0001, bitSetProvider)
 	key := make([]byte, 100)
@@ -641,6 +694,7 @@ func TestTestLocations(t *testing.T) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := NewWithEstimates(1000, 0.001, bitSetProvider)
 	n1 := []byte("Love")
@@ -693,6 +747,7 @@ func TestFPP(t *testing.T) {
 	bitSetProvider := RedisBitSetProvider{
 		RedisKey:    "test",
 		RedisClient: cli,
+		ExpireTime:  time.Hour * 24,
 	}
 	f := NewWithEstimates(1000, 0.001, bitSetProvider)
 	for i := uint32(0); i < 1000; i++ {
